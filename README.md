@@ -43,3 +43,21 @@
 4. Открыть документацию: `http://localhost:8000/docs`
 
 Все запросы требуют заголовок `X-API-Key` со значением из `.env`.
+
+## Структура проекта
+
+```
+.
+├── app
+│   ├── api              # маршруты API (buildings, organizations, activities)
+│   ├── core             # настройки и безопасность
+│   ├── crud             # бизнес-логика / CRUD
+│   ├── db               # подключение к БД + миграции Alembic
+│   ├── models           # ORM модели SQLAlchemy
+│   ├── schemas          # Pydantic-схемы ответов
+│   └── main.py          # точка входа FastAPI
+├── alembic.ini          # конфигурация Alembic
+├── Dockerfile
+├── docker-compose.yml
+└── requirements.txt
+```

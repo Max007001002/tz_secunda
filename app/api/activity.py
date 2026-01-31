@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.security import API_KEY_HEADER
 from app.crud.activity import collect_descendant_ids
 from app.db.deps import get_session
 from app.models.activity import Activity
@@ -10,7 +11,11 @@ from app.models.organization import Organization, organization_activity
 from app.schemas.organization import OrganizationRead
 
 
-router = APIRouter(prefix="/activities", tags=["Activities"])
+router = APIRouter(
+    prefix="/activities",
+    tags=["Activities"],
+    dependencies=[Security(API_KEY_HEADER)],
+)
 
 
 @router.get(

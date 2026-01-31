@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,7 +14,7 @@ class Activity(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("activities.id"), nullable=True)
 
-    parent: Mapped["Activity" | None] = relationship(
+    parent: Mapped[Optional["Activity"]] = relationship(
         "Activity",
         remote_side=[id],
         backref="children",

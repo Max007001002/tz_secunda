@@ -1,10 +1,11 @@
 from math import asin, cos, radians, sin, sqrt
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.security import API_KEY_HEADER
 from app.crud.activity import collect_descendant_ids
 from app.db.deps import get_session
 from app.models.activity import Activity
@@ -14,7 +15,11 @@ from app.models.organization import organization_activity
 from app.schemas.organization import OrganizationRead
 
 
-router = APIRouter(prefix="/organizations", tags=["Organizations"])
+router = APIRouter(
+    prefix="/organizations",
+    tags=["Organizations"],
+    dependencies=[Security(API_KEY_HEADER)],
+)
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -24,29 +29,6 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     c = 2 * asin(sqrt(a))
     return radius * c
-
-
-@router.get(
-    "/{org_id}",
-    response_model=OrganizationRead,
-    summary="Организация по ID",
-    description="Возвращает подробную информацию об организации. Требуется заголовок X-API-Key.",
-)
-async def get_organization(
-    org_id: int,
-    session: AsyncSession = Depends(get_session),
-):
-    result = await session.execute(
-        select(Organization)
-        .options(selectinload(Organization.building))
-        .options(selectinload(Organization.activities))
-        .options(selectinload(Organization.phones))
-        .where(Organization.id == org_id)
-    )
-    organization = result.scalars().first()
-    if organization is None:
-        raise HTTPException(status_code=404, detail="Organization not found")
-    return organization
 
 
 @router.get(
@@ -194,3 +176,26 @@ async def search_organizations(
         .where(organization_activity.c.activity_id.in_(activity_ids))
     )
     return result.unique().scalars().all()
+
+
+@router.get(
+    "/{org_id}",
+    response_model=OrganizationRead,
+    summary="Организация по ID",
+    description="Возвращает подробную информацию об организации. Требуется заголовок X-API-Key.",
+)
+async def get_organization(
+    org_id: int,
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(Organization)
+        .options(selectinload(Organization.building))
+        .options(selectinload(Organization.activities))
+        .options(selectinload(Organization.phones))
+        .where(Organization.id == org_id)
+    )
+    organization = result.scalars().first()
+    if organization is None:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return organization

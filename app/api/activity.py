@@ -13,7 +13,15 @@ from app.schemas.organization import OrganizationRead
 router = APIRouter(prefix="/activities", tags=["Activities"])
 
 
-@router.get("/{activity_id}/organizations", response_model=list[OrganizationRead])
+@router.get(
+    "/{activity_id}/organizations",
+    response_model=list[OrganizationRead],
+    summary="Организации по виду деятельности",
+    description=(
+        "Возвращает организации по виду деятельности и его подвидам "
+        "(до 3 уровней). Требуется заголовок X-API-Key."
+    ),
+)
 async def organizations_by_activity(
     activity_id: int,
     session: AsyncSession = Depends(get_session),

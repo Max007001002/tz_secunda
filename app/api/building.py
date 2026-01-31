@@ -13,13 +13,26 @@ from app.schemas.organization import OrganizationRead
 router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
-@router.get("", response_model=list[BuildingRead])
+@router.get(
+    "",
+    response_model=list[BuildingRead],
+    summary="Список зданий",
+    description="Возвращает список всех зданий. Требуется заголовок X-API-Key.",
+)
 async def list_buildings(session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(Building))
     return result.scalars().all()
 
 
-@router.get("/{building_id}/organizations", response_model=list[OrganizationRead])
+@router.get(
+    "/{building_id}/organizations",
+    response_model=list[OrganizationRead],
+    summary="Организации в здании",
+    description=(
+        "Возвращает организации, находящиеся в указанном здании. "
+        "Требуется заголовок X-API-Key."
+    ),
+)
 async def organizations_in_building(
     building_id: int,
     session: AsyncSession = Depends(get_session),

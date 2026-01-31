@@ -26,7 +26,12 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return radius * c
 
 
-@router.get("/{org_id}", response_model=OrganizationRead)
+@router.get(
+    "/{org_id}",
+    response_model=OrganizationRead,
+    summary="Организация по ID",
+    description="Возвращает подробную информацию об организации. Требуется заголовок X-API-Key.",
+)
 async def get_organization(
     org_id: int,
     session: AsyncSession = Depends(get_session),
@@ -44,7 +49,16 @@ async def get_organization(
     return organization
 
 
-@router.get("/nearby", response_model=list[OrganizationRead])
+@router.get(
+    "/nearby",
+    response_model=list[OrganizationRead],
+    summary="Организации рядом",
+    description=(
+        "Поиск организаций по радиусу (км) от точки. "
+        "Пример: /organizations/nearby?lat=55.75&lon=37.62&radius=5. "
+        "Требуется заголовок X-API-Key."
+    ),
+)
 async def organizations_nearby(
     lat: float = Query(...),
     lon: float = Query(...),
@@ -88,7 +102,16 @@ async def organizations_nearby(
     return result.scalars().all()
 
 
-@router.get("/within", response_model=list[OrganizationRead])
+@router.get(
+    "/within",
+    response_model=list[OrganizationRead],
+    summary="Организации в области",
+    description=(
+        "Поиск организаций внутри прямоугольной области. "
+        "Пример: /organizations/within?lat_min=55.7&lat_max=55.8&lon_min=37.5&lon_max=37.7. "
+        "Требуется заголовок X-API-Key."
+    ),
+)
 async def organizations_within(
     lat_min: float = Query(...),
     lat_max: float = Query(...),
@@ -120,7 +143,16 @@ async def organizations_within(
     return result.scalars().all()
 
 
-@router.get("/search", response_model=list[OrganizationRead])
+@router.get(
+    "/search",
+    response_model=list[OrganizationRead],
+    summary="Поиск организаций",
+    description=(
+        "Поиск по названию (name) или виду деятельности (activity). "
+        "Примеры: /organizations/search?name=центр или "
+        "/organizations/search?activity=еда. Требуется заголовок X-API-Key."
+    ),
+)
 async def search_organizations(
     name: str | None = Query(None, min_length=1),
     activity: str | None = Query(None, min_length=1),
